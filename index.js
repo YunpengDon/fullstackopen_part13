@@ -2,51 +2,69 @@ require("dotenv").config();
 const { Sequelize, QueryTypes, Model, DataTypes } = require("sequelize");
 const express = require("express");
 const app = express();
+app.use(express.json());
 
 const sequelize = new Sequelize(process.env.DATABASE_URL);
 
-class Note extends Model {}
-Note.init({
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
+class Blog extends Model {}
+Blog.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    author: {
+      type: DataTypes.TEXT,
+    },
+    url: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    title: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    likes: {
+      type: DataTypes.INTEGER,
+    },
   },
-  content: {
-    type: DataTypes.TEXT,
-    allowNull: false
-  },
-  important: {
-    type: DataTypes.BOOLEAN
-  },
-  date: {
-    type: DataTypes.DATE
+  {
+    sequelize,
+    underscored: true,
+    timestamps: false,
+    modelName: "blog",
   }
-}, {
-  sequelize,
-  underscored: true,
-  timestamps: false,
-  modelName: 'note'
-})
+);
 
-app.get("/api/notes", async (req, res) => {
-  // const notes = await sequelize.query("SELECT * FROM notes", {
-  //   type: QueryTypes.SELECT,
-  // });
-  const notes = await Note.findAll()
-  res.json(notes)
+app.get("/api/blogs", async (req, res) => {
+  const blogs = await Blog.findAll();
+  res.json(blogs);
 });
 
-app.post('/api/notes', async (req, res) => {
+app.post("/api/blogs", async (req, res) => {
   try {
-    const note = await Note.create(req.body)
-    res.json(note)
+    console.log(req.body);
+    const blog = await Blog.create(req.body);
+    res.json(blog);
   } catch (error) {
-    return res.status(400).json({error})
+    return res.status(400).json({ error });
   }
-})
+});
 
-const PORT = process.env.PORT || 3001
+app.delete("/api/blogs/:id", async (req, res) => {
+  try {
+    const blog = await Blog.findByPk(req.params.id);
+    if (blog) {
+      await blog.destroy();
+      res.json(blog);
+    }
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
+});
+
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-})
+});
