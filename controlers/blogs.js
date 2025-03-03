@@ -17,8 +17,12 @@ const tokenExtractor = (req, res, next) => {
   next();
 };
 
-router.get("/", async (req, res) => {
-  const blogs = await Blog.findAll();
+router.get("/", tokenExtractor, async (req, res) => {
+  const blogs = await Blog.findAll({
+    where: {
+      userId: req.decodedToken.id,
+    },
+  });
   res.json(blogs);
 });
 
