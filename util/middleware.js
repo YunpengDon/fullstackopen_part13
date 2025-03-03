@@ -5,9 +5,13 @@ const unknownEndpoint = (request, response) => {
 };
 
 const errorHandler = (error, request, response, next) => {
+  console.log(error);
+
   logger.error(error.message);
   if (error.name === "SequelizeValidationError") {
-    return response.status(400).send({ error: error.message });
+    return error.errors
+      ? response.status(400).send({ error: error.errors.map((e) => e.message) })
+      : response.status(400).send({ error: error.message });
   } else if (error.name === "SyntaxError") {
     return response.status(400).json({ error: error.message });
   } else if (error.name === "SequelizeUniqueConstraintError") {
