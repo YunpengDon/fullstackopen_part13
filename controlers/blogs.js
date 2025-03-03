@@ -56,7 +56,13 @@ router.put("/:id", blogFinder, async (req, res) => {
   }
 });
 
-router.delete("/:id", blogFinder, async (req, res) => {
+router.delete("/:id", tokenExtractor, blogFinder, async (req, res, next) => {
+  if (req.decodedToken.id !== req.blog.userId) {
+    const error = new Error(
+      "Only the user who added the blog can delete the blog"
+    );
+    return next(error);
+  }
   if (req.blog) {
     await req.blog.destroy();
     res.json(req.blog);
