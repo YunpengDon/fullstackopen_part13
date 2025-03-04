@@ -7,6 +7,7 @@ const userRouter = require("./controlers/users");
 const loginRouter = require("./controlers/login");
 const middleware = require("./util/middleware");
 const { PORT } = require("./util/config");
+const { connectToDatabase } = require("./util/db");
 
 app.use(express.json());
 app.use("/api/blogs", blogRouter);
@@ -17,6 +18,11 @@ app.use("/api/login", loginRouter);
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const start = async () => {
+  await connectToDatabase();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
+
+start();

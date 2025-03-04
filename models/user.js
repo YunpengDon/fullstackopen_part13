@@ -19,10 +19,10 @@ User.init(
       unique: true,
       validate: {
         isEmail: {
-          msg: "Validation isEmail on username failed"
+          msg: "Validation isEmail on username failed",
         },
-      }
-    }
+      },
+    },
   },
   {
     sequelize,
