@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { User, Blog } = require("../models");
+const { User, Blog, ReadingList } = require("../models");
 
 router.get("/", async (req, res) => {
   const users = await User.findAll({
@@ -27,6 +27,28 @@ router.put("/:username", async (req, res, next) => {
       ...req.body,
     });
     res.json(req.body);
+  } else {
+    const error = new Error("User not found");
+    error.name = "NotFound";
+    return next(error);
+  }
+});
+
+router.get("/:id", async (req, res, next) => {
+  const user = await User.findOne({ 
+    where: { id: req.params.id },
+    attributes: ["name", "username"],
+    include: [{
+      model: Blog,
+      as: "readings",
+      attributes: ['id', 'url', 'title', 'author', 'likes', 'year'],
+      through: {
+        attributes: []
+      }
+    }]
+  });
+  if (user) {
+    res.json(user);
   } else {
     const error = new Error("User not found");
     error.name = "NotFound";

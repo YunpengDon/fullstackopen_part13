@@ -27,10 +27,10 @@ router.get("/", tokenExtractor, async (req, res) => {
     where: {
       [Op.or]: {
         title: {
-          [Op.iLike]: req.query.search ? `%${req.query.search}%` : "",
+          [Op.iLike]: req.query.search ? `%${req.query.search}%` : "%%",
         },
         author: {
-          [Op.iLike]: req.query.search ? `%${req.query.search}%` : "",
+          [Op.iLike]: req.query.search ? `%${req.query.search}%` : "%%",
         },
       },
     },
