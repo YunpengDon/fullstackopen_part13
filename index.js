@@ -5,6 +5,7 @@ const blogRouter = require("./controlers/blogs");
 const authorRouter = require("./controlers/authors");
 const userRouter = require("./controlers/users");
 const loginRouter = require("./controlers/login");
+const logoutRouter = require("./controlers/logout");
 const readingListRouter = require("./controlers/readingList");
 const middleware = require("./util/middleware");
 const { PORT } = require("./util/config");
@@ -16,6 +17,7 @@ app.use("/api/authors", authorRouter);
 app.use("/api/users", userRouter);
 app.use("/api/readinglists", readingListRouter);
 app.use("/api/login", loginRouter);
+app.use("/api/logout", logoutRouter);
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);

@@ -1,13 +1,13 @@
 const router = require("express").Router();
 const { Op } = require("sequelize");
 const { Blog, User } = require("../models");
-const { tokenExtractor } = require("../util/middleware");
+const { tokenExtractor, validateLoginState } = require("../util/middleware");
 
-router.get("/", tokenExtractor, async (req, res) => {
+router.get("/", tokenExtractor, validateLoginState, async (req, res) => {
   const blogs = await Blog.findAll({
     include: {
       model: User,
-      attributes: ["name"],
+      attributes: ["name"], 
     },
     where: {
       [Op.or]: {
@@ -24,7 +24,7 @@ router.get("/", tokenExtractor, async (req, res) => {
   res.json(blogs);
 });
 
-router.post("/", tokenExtractor, async (req, res) => {
+router.post("/", tokenExtractor, validateLoginState, async (req, res) => {
   const user = await User.findByPk(req.decodedToken.id);
   const blog = await Blog.create({ ...req.body, userId: user.id });
   res.json(blog);
@@ -40,7 +40,7 @@ const blogFinder = async (req, res, next) => {
   next();
 };
 
-router.get("/:id", blogFinder, async (req, res) => {
+router.get("/:id", tokenExtractor, validateLoginState, blogFinder, async (req, res) => {
   if (req.blog) {
     res.json(req.blog);
   } else {
@@ -48,7 +48,7 @@ router.get("/:id", blogFinder, async (req, res) => {
   }
 });
 
-router.put("/:id", blogFinder, async (req, res) => {
+router.put("/:id", tokenExtractor, validateLoginState, blogFinder, async (req, res) => {
   const likes = req.body?.likes;
   if (req.blog && likes) {
     await req.blog.update({ likes: likes });
@@ -58,7 +58,7 @@ router.put("/:id", blogFinder, async (req, res) => {
   }
 });
 
-router.delete("/:id", tokenExtractor, blogFinder, async (req, res, next) => {
+router.delete("/:id", tokenExtractor, validateLoginState, blogFinder, async (req, res, next) => {
   if (req.decodedToken.id !== req.blog.userId) {
     const error = new Error(
       "Only the user who added the blog can delete the blog"

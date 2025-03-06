@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const logger = require("./logger");
 const { SECRET } = require("./config");
+const { Session } = require("../models");
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
@@ -19,6 +20,8 @@ const errorHandler = (error, request, response, next) => {
   } else if (error.name === "SequelizeUniqueConstraintError") {
     return response.status(400).json({ error: error.errors[0].message });
   } else if (error.name === "SequelizeDatabaseError") {
+    return response.status(401).json({ error: error.message });
+  } else if (error.name === "Unauthorize") {
     return response.status(401).json({ error: error.message });
   } else if (error.name === "NotFound") {
     return response.status(404).json({ error: error.message });
@@ -43,8 +46,19 @@ const tokenExtractor = (req, res, next) => {
   next();
 };
 
+const validateLoginState =  async (req, res, next) => {
+  const session = await Session.findOne({where: {userId: req.decodedToken.id}})
+  if (!session) {
+    const error = new Error('Please log in')
+    error.name = 'Unauthorize'
+    next(error)
+  }
+  next();
+}
+
 module.exports = {
   unknownEndpoint,
   errorHandler,
   tokenExtractor,
+  validateLoginState
 };
